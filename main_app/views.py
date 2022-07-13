@@ -1,9 +1,10 @@
 
-from nis import cat
-from django.shortcuts import render
+
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from .models import Cat
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from .forms import FeedingForm
 
 #Faux Cat Data - Database simulation
 
@@ -41,8 +42,21 @@ def cats_index(request):
 def cats_detail(request, cat_id):
     #get the individual cat
     cat = Cat.objects.get(id=cat_id)
+    # instantiate our feeding form
+    feeding_form = FeedingForm()
     # render template, pass it the cat
-    return render(request, 'cats/detail.html', {'cat': cat})
+    return render(request, 'cats/detail.html', {'cat': cat, 'feeding_form': feeding_form})
+
+def add_feeding(request, cat_id):
+    # Create the ModelForm using the request.POST
+    form = FeedingForm(request.POST)
+    # validate form
+    if form.is_valid():
+        new_feeding = form.save(commit=False)
+        new_feeding.cat_id = cat_id
+        new_feeding.save()
+    return redirect('detail', cat_id = cat_id)
+
 
 
 class CatCreate(CreateView):
